@@ -137,6 +137,8 @@ input[type=range]::-moz-range-thumb{width:13px;height:13px;border-radius:50%;bac
 /* ---------- Source credit line ---------- */
 #src{position:fixed;bottom:2px;left:50%;transform:translateX(-50%);z-index:100;font-size:6px;
   color:#1a1815;text-align:center;max-width:720px;font-family:'Space Mono',monospace;letter-spacing:.3px;pointer-events:none}
+#watermark{position:fixed;bottom:6px;right:12px;z-index:100;font-family:'Space Mono',monospace;
+  font-size:7px;letter-spacing:1px;color:rgba(255,255,255,.07);pointer-events:none;text-transform:lowercase}
 
 /* ---------- Panel overlay (Projects, Settings, etc.) ---------- */
 #overlay{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:400;display:none;backdrop-filter:blur(4px)}
@@ -240,12 +242,50 @@ input[type=range]::-moz-range-thumb{width:13px;height:13px;border-radius:50%;bac
   #topbar .sub{display:none}
 
   /* Stats + legend above the bottom bar */
-  #sts{bottom:calc(60px + env(safe-area-inset-bottom));padding:8px 12px}
+  /* Stats — bottom-left, collapsible */
+  #sts{
+    bottom:calc(66px + env(safe-area-inset-bottom));
+    left:10px;right:auto;
+    padding:7px 10px;text-align:left;
+    cursor:pointer;user-select:none;
+    transition:opacity .2s;
+  }
+  #sts.mob-collapsed .stv,
+  #sts.mob-collapsed .sts2,
+  #sts.mob-collapsed .stl{ display:none }
+  #sts.mob-collapsed::after{
+    content:'⊞ Residents';
+    font-family:'Space Mono',monospace;font-size:7px;letter-spacing:1.5px;
+    text-transform:uppercase;color:#5a5550;
+  }
   .stv{font-size:18px}
-  #leg{bottom:calc(64px + env(safe-area-inset-bottom))}
 
-  /* Map controls — full-width sheet from bottom-left */
+  /* Legend — bottom-left above stats, collapsible */
+  #leg{
+    bottom:calc(118px + env(safe-area-inset-bottom));
+    left:10px;right:auto;
+    cursor:pointer;
+  }
+  #leg.mob-collapsed .li,
+  #leg.mob-collapsed h4{ display:none }
+  #leg.mob-collapsed::after{
+    content:'⊞ Legend';
+    font-family:'Space Mono',monospace;font-size:7px;letter-spacing:1.5px;
+    text-transform:uppercase;color:#5a5550;
+  }
+
+  /* Controls button — top-right, small icon-style */
+  #controlsBtn{
+    top:58px;right:10px;bottom:auto;
+    font-size:8px;padding:5px 9px;letter-spacing:1px;
+  }
+
+  /* Map controls — full-width sheet from bottom */
   #map-controls{width:calc(100vw - 24px);max-height:55vh;bottom:calc(64px + env(safe-area-inset-bottom));left:12px;right:12px;top:auto}
+
+  /* Watermark above bottom bar */
+  #src{bottom:calc(62px + env(safe-area-inset-bottom));font-size:5px;white-space:nowrap}
+  #watermark{bottom:calc(62px + env(safe-area-inset-bottom))}
 
   /* Panels — bottom sheet */
   .panel.full{
@@ -682,6 +722,9 @@ body:not(.admin-mode) .bp-profile-placeholder{pointer-events:none!important;curs
 
 <!-- ============ SOURCE CREDIT ============ -->
 <div id="src">Atlanta Density Explorer · Sources: Wikipedia · Midtown Alliance · Fulton County GIS · Urbanize Atlanta · City of Atlanta DCP · U.S. Census ACS · AI-enriched data shown with confidence indicators</div>
+
+<!-- ============ WATERMARK ============ -->
+<div id="watermark">atlanta-explorer.fly.dev</div>
 
 <!-- ============ OVERLAY + PANELS ============ -->
 <div id="overlay"></div>
@@ -8627,6 +8670,15 @@ const UI = {
       tab.addEventListener('click', () => this.navigate(tab.dataset.mobScreen));
     });
 
+    // Mobile collapse toggles for stats + legend
+    const isMobile = () => window.innerWidth <= 768;
+    document.getElementById('sts').addEventListener('click', () => {
+      if (isMobile()) document.getElementById('sts').classList.toggle('mob-collapsed');
+    });
+    document.getElementById('leg').addEventListener('click', () => {
+      if (isMobile()) document.getElementById('leg').classList.toggle('mob-collapsed');
+    });
+
     // Close buttons
     document.querySelectorAll('[data-close]').forEach(btn => {
       btn.addEventListener('click', () => this.closeAllPanels());
@@ -10501,6 +10553,12 @@ window.addEventListener('load', () => {
     UI.initImageInputs();
     initMapControls();
     UI.refreshContextPills();
+
+    // Start stats + legend collapsed on mobile to avoid overlap
+    if (window.innerWidth <= 768) {
+      document.getElementById('sts').classList.add('mob-collapsed');
+      document.getElementById('leg').classList.add('mob-collapsed');
+    }
 
     // Pre-open IndexedDB so first gallery load is instant
     ImageDB.open().catch(e => console.warn('IndexedDB unavailable:', e.message));
