@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="192" height="192" viewBox="0 0 192 192">
+  <rect width="192" height="192" fill="#08080c"/>
+  <!-- Skyline silhouette -->
+  <rect x="28" y="105" width="15" height="57" fill="#1a1815"/>
+  <rect x="46" y="76" width="11" height="86" fill="#1e1c19"/>
+  <rect x="59" y="92" width="13" height="71" fill="#1a1815"/>
+  <rect x="76"  y="57" width="15" height="105" fill="#221f1c"/>
+  <rect x="96"  y="72" width="11" height="90" fill="#1e1c19"/>
+  <rect x="109" y="96" width="17" height="67" fill="#1a1815"/>
+  <rect x="128" y="82" width="13" height="80" fill="#1e1c19"/>
+  <rect x="144" y="105" width="19" height="57" fill="#1a1815"/>
+  <!-- Accent dot -->
+  <circle cx="80" cy="51" r="5" fill="#D64933"/>
+  <!-- Ground line -->
+  <rect x="0" y="163" width="192" height="3" fill="#D64933" opacity=".4"/>
+</svg>

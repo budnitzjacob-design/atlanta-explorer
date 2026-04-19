@@ -2,7 +2,13 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover">
+<meta name="theme-color" content="#08080c">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="ATL Explorer">
+<link rel="manifest" href="/manifest.json">
+<link rel="apple-touch-icon" href="/icon-192.png">
 <title>Atlanta Density Explorer</title>
 <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=DM+Sans:opsz,wght@9..40,300;9..40,500;9..40,700&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
@@ -222,15 +228,91 @@ input[type=range]::-moz-range-thumb{width:13px;height:13px;border-radius:50%;bac
 .inline-help:hover{opacity:.8}
 
 /* ---------- Mobile ---------- */
-@media (max-width: 720px){
-  #hdr h1{font-size:12px;letter-spacing:2px}
-  #hdr .sub{display:none}
-  #map-controls{width:calc(100vw - 28px);max-height:60vh}
-  .panel.full{top:20px;left:10px;right:10px;bottom:20px}
-  .panel.modal{width:calc(100vw - 20px)}
-  #sts{padding:8px 12px}
+/* ================================================================
+   MOBILE — bottom tab bar, bottom-sheet panels, touch-friendly
+   ================================================================ */
+@media (max-width: 768px){
+  /* Hide desktop nav; ctx pills collapse */
+  #topbar .nav-group{display:none}
+  #topbar .ctx{display:none}
+  #topbar{padding:10px 14px 10px}
+  #topbar h1{font-size:11px;letter-spacing:2px}
+  #topbar .sub{display:none}
+
+  /* Stats + legend above the bottom bar */
+  #sts{bottom:calc(60px + env(safe-area-inset-bottom));padding:8px 12px}
   .stv{font-size:18px}
-  .nav-btn{padding:6px 8px;font-size:8px;letter-spacing:1px}
+  #leg{bottom:calc(64px + env(safe-area-inset-bottom))}
+
+  /* Map controls — full-width sheet from bottom-left */
+  #map-controls{width:calc(100vw - 24px);max-height:55vh;bottom:calc(64px + env(safe-area-inset-bottom));left:12px;right:12px;top:auto}
+
+  /* Panels — bottom sheet */
+  .panel.full{
+    top:auto!important;left:0!important;right:0!important;bottom:0!important;
+    height:88vh;border-radius:18px 18px 0 0;
+    padding-bottom:calc(60px + env(safe-area-inset-bottom));
+  }
+  .panel.modal{width:calc(100vw - 20px)}
+
+  /* Building panel — bottom sheet with drag handle */
+  #buildingPanel{
+    top:auto!important;left:0!important;right:0!important;bottom:0!important;
+    height:80vh;border-radius:18px 18px 0 0;
+    padding-bottom:calc(60px + env(safe-area-inset-bottom));
+    transform:translateY(100%);transition:transform .32s cubic-bezier(.4,0,.2,1);
+  }
+  #buildingPanel.open{transform:translateY(0)}
+  #buildingPanel::before{
+    content:'';display:block;width:36px;height:4px;border-radius:2px;
+    background:rgba(255,255,255,.15);margin:10px auto 0;flex-shrink:0;
+  }
+  #buildingPanel .bp-layout{flex-direction:column}
+  #buildingPanel .bp-sidebar{width:100%;border-right:none;border-bottom:1px solid rgba(255,255,255,.06);max-height:180px;overflow-y:auto}
+
+  /* Tip tooltip — hidden on mobile (tap selects instead) */
+  #tip{display:none!important}
+
+  /* Bottom tab bar */
+  #mobileNav{
+    display:flex;position:fixed;bottom:0;left:0;right:0;z-index:300;
+    background:rgba(8,8,12,.97);border-top:1px solid rgba(255,255,255,.07);
+    padding-bottom:env(safe-area-inset-bottom);
+    backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
+  }
+  .mob-tab{
+    flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;
+    gap:3px;padding:8px 4px;cursor:pointer;
+    color:#5a5550;font-family:'Space Mono',monospace;font-size:7px;letter-spacing:1px;
+    text-transform:uppercase;border:none;background:none;
+    -webkit-tap-highlight-color:transparent;transition:color .15s;
+  }
+  .mob-tab svg{opacity:.5;transition:opacity .15s}
+  .mob-tab.active{color:#D64933}
+  .mob-tab.active svg{opacity:1}
+
+  /* Controls btn repositioned for mobile */
+  #controlsBtn{bottom:calc(68px + env(safe-area-inset-bottom));right:14px}
+
+  /* Table — horizontal scroll */
+  #tablePanel .table-container{overflow-x:auto;-webkit-overflow-scrolling:touch}
+  .tbl{min-width:520px}
+  .tbl td.name-cell{max-width:140px}
+
+  /* Overlay covers full screen */
+  #overlay{z-index:205}
+
+  /* Splash sizing */
+  #splash{padding:32px 24px}
+  #splash h1{font-size:28px;letter-spacing:8px}
+
+  /* Tutorial card full-width */
+  #tutCard{left:12px!important;right:12px!important;width:auto!important;max-width:none!important}
+}
+
+/* Desktop only — hide mobile nav */
+@media (min-width: 769px){
+  #mobileNav{display:none}
 }
 
 /* ================================================================
@@ -386,6 +468,37 @@ body:not(.admin-mode) .bp-profile-placeholder{pointer-events:none!important;curs
 <div id="tutOverlay" style="display:none"></div>
 <div id="tutSpot" style="display:none"></div>
 <div id="tutCard" style="display:none"></div>
+
+<!-- ============ MOBILE BOTTOM TAB BAR ============ -->
+<nav id="mobileNav" role="navigation" aria-label="Main navigation">
+  <button class="mob-tab active" data-mob-screen="map" aria-label="Map">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
+      <path d="M3 7l6-4 6 4 6-4v14l-6 4-6-4-6 4V7z"/>
+    </svg>
+    Map
+  </button>
+  <button class="mob-tab" data-mob-screen="table" aria-label="Table">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
+      <rect x="3" y="3" width="18" height="18" rx="2"/>
+      <path d="M3 9h18M3 15h18M9 3v18"/>
+    </svg>
+    Table
+  </button>
+  <button class="mob-tab" data-mob-screen="projects" aria-label="Projects">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
+      <path d="M2 6h20M2 12h20M2 18h12"/>
+      <circle cx="19" cy="18" r="3"/>
+    </svg>
+    Projects
+  </button>
+  <button class="mob-tab admin-only" data-mob-screen="settings" aria-label="Settings">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
+      <circle cx="12" cy="12" r="3"/>
+      <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+    </svg>
+    Settings
+  </button>
+</nav>
 
 <canvas id="c3d"></canvas>
 
@@ -8364,6 +8477,62 @@ const Map3D = {
         UI.openBuildingPage(this.hoverBuildingId);
       }
     });
+
+    // ---- Touch gestures: pinch zoom + 2-finger pan + tap to select ----
+    let touches = {};
+    let pinchDist0 = 0;
+    let pinchCam0  = 0;
+    let tapTimeout  = null;
+    let tapPos      = null;
+
+    cn.addEventListener('touchstart', e => {
+      Array.from(e.changedTouches).forEach(t => { touches[t.identifier] = { x: t.clientX, y: t.clientY }; });
+      const ids = Object.keys(touches);
+      if (ids.length === 2) {
+        const a = touches[ids[0]], b = touches[ids[1]];
+        pinchDist0 = Math.hypot(a.x - b.x, a.y - b.y);
+        pinchCam0  = this.cam.r;
+        this.drag.on = false;
+      }
+      if (ids.length === 1) {
+        tapPos = { x: e.changedTouches[0].clientX, y: e.changedTouches[0].clientY };
+      }
+    }, { passive: true });
+
+    cn.addEventListener('touchmove', e => {
+      Array.from(e.changedTouches).forEach(t => { touches[t.identifier] = { x: t.clientX, y: t.clientY }; });
+      const ids = Object.keys(touches);
+      if (ids.length === 2) {
+        const a = touches[ids[0]], b = touches[ids[1]];
+        const dist = Math.hypot(a.x - b.x, a.y - b.y);
+        this.cam.r = Math.max(5, Math.min(80, pinchCam0 - (dist - pinchDist0) * 0.08));
+        this.updateCamera();
+        e.preventDefault();
+      }
+    }, { passive: false });
+
+    cn.addEventListener('touchend', e => {
+      Array.from(e.changedTouches).forEach(t => { delete touches[t.identifier]; });
+      // Single-tap to select building
+      if (Object.keys(touches).length === 0 && tapPos && !this.drag.on) {
+        const moved = e.changedTouches[0];
+        const dx = moved.clientX - tapPos.x, dy = moved.clientY - tapPos.y;
+        if (Math.hypot(dx, dy) < 12) {
+          this.mouseVec.set((tapPos.x / innerWidth) * 2 - 1, -(tapPos.y / innerHeight) * 2 + 1);
+          this.raycaster.setFromCamera(this.mouseVec, this.camera);
+          const hits = this.raycaster.intersectObjects(this.meshes);
+          if (hits.length > 0 && hits[0].object.userData.buildingId) {
+            UI.openBuildingPage(hits[0].object.userData.buildingId);
+          }
+        }
+      }
+      tapPos = null;
+    }, { passive: true });
+
+    cn.addEventListener('touchcancel', e => {
+      Array.from(e.changedTouches).forEach(t => { delete touches[t.identifier]; });
+      tapPos = null;
+    }, { passive: true });
   },
 
   doHover(e) {
@@ -8448,9 +8617,14 @@ const UI = {
   openDropdown: null,
 
   init() {
-    // Nav buttons
+    // Nav buttons (desktop)
     document.querySelectorAll('.nav-btn[data-screen]').forEach(btn => {
       btn.addEventListener('click', () => this.navigate(btn.dataset.screen));
+    });
+
+    // Mobile bottom tab bar
+    document.querySelectorAll('.mob-tab[data-mob-screen]').forEach(tab => {
+      tab.addEventListener('click', () => this.navigate(tab.dataset.mobScreen));
     });
 
     // Close buttons
@@ -8491,18 +8665,21 @@ const UI = {
     });
   },
 
+  _syncNavActive(screen) {
+    document.querySelectorAll('.nav-btn[data-screen]').forEach(btn => btn.classList.toggle('active', btn.dataset.screen === screen));
+    document.querySelectorAll('.mob-tab[data-mob-screen]').forEach(tab => tab.classList.toggle('active', tab.dataset.mobScreen === screen));
+  },
+
   navigate(screen) {
     if (screen === 'table') {
       this.currentScreen = 'table';
-      document.querySelectorAll('.nav-btn[data-screen]').forEach(btn => btn.classList.toggle('active', btn.dataset.screen === 'table'));
+      this._syncNavActive('table');
       this.openTablePanel();
       return;
     }
 
     this.currentScreen = screen;
-    document.querySelectorAll('.nav-btn[data-screen]').forEach(btn => {
-      btn.classList.toggle('active', btn.dataset.screen === screen);
-    });
+    this._syncNavActive(screen);
 
     this.closeAllPanels();
 
@@ -8528,9 +8705,7 @@ const UI = {
     // If we were on projects/settings, drop back to map view
     if (this.currentScreen !== 'map') {
       this.currentScreen = 'map';
-      document.querySelectorAll('.nav-btn[data-screen]').forEach(btn => {
-        btn.classList.toggle('active', btn.dataset.screen === 'map');
-      });
+      this._syncNavActive('map');
       document.getElementById('controlsBtn').style.display = '';
       document.getElementById('sts').style.opacity = '1';
     }
@@ -10573,6 +10748,11 @@ document.getElementById('tutorialBtn').addEventListener('click', () => Tutorial.
 
 })();  // end IIFE
 
+</script>
+<script>
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('/sw.js').catch(() => {});
+}
 </script>
 </body>
 </html>
