@@ -6946,7 +6946,7 @@ const IS_ADMIN = (() => {
 const IS_LOCAL  = location.protocol === 'file:';
 const RAG_ENDPOINT = IS_LOCAL
   ? 'https://api.anthropic.com/v1/messages'
-  : '/.netlify/functions/enrich';
+  : '/api/enrich';
 
 /**
  * Values store: three layers of per-building values.
