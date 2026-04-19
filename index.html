@@ -344,9 +344,39 @@ body:not(.admin-mode) .gallery-upload-btn{display:none!important}
 .rag-progress-fill{height:100%;background:linear-gradient(90deg,#3A8F6E,#5BA88C);border-radius:3px;transition:width .4s}
 .rag-status-text{font-family:'Space Mono',monospace;font-size:9px;color:#5a5550;margin-top:4px}
 .rag-key-warning{font-size:9px;color:#5a5550;margin-top:4px;line-height:1.5}
+/* ---- Splash ---- */
+#splash{position:fixed;inset:0;z-index:9000;background:rgba(10,9,8,.96);display:flex;align-items:center;justify-content:center;flex-direction:column;gap:0;animation:splashIn .4s ease}
+@keyframes splashIn{from{opacity:0}to{opacity:1}}
+#splash h1{font-family:'Space Mono',monospace;font-size:clamp(28px,5vw,56px);letter-spacing:6px;color:#e8e4dc;margin:0 0 18px;text-align:center}
+#splash p{font-size:13px;color:#8a8580;max-width:440px;text-align:center;line-height:1.7;margin:0 0 32px;padding:0 24px}
+#splash button{background:#D64933;border:none;color:#fff;font-family:'Space Mono',monospace;font-size:10px;letter-spacing:2px;text-transform:uppercase;padding:12px 28px;border-radius:4px;cursor:pointer;transition:background .15s}
+#splash button:hover{background:#c43d29}
+#splash .splash-skip{background:none;color:#4a4540;font-size:9px;margin-top:10px;text-decoration:underline;padding:4px 8px}
+#splash .splash-skip:hover{color:#8a8580;background:none}
+/* ---- Tutorial ---- */
+#tutOverlay{position:fixed;inset:0;z-index:8000;pointer-events:none}
+#tutSpot{position:fixed;z-index:8100;box-shadow:0 0 0 4000px rgba(10,9,8,.82);border-radius:6px;transition:all .35s cubic-bezier(.4,0,.2,1);pointer-events:none}
+#tutCard{position:fixed;z-index:8200;background:#1a1917;border:1px solid rgba(255,255,255,.1);border-radius:8px;padding:18px 20px;max-width:280px;box-shadow:0 8px 32px rgba(0,0,0,.6);pointer-events:auto;transition:all .35s cubic-bezier(.4,0,.2,1)}
+#tutCard h4{font-family:'Space Mono',monospace;font-size:10px;letter-spacing:2px;text-transform:uppercase;color:#D64933;margin:0 0 8px}
+#tutCard p{font-size:11px;color:#a8a49c;line-height:1.65;margin:0 0 14px}
+#tutCard .tut-nav{display:flex;align-items:center;gap:8px}
+#tutCard .tut-nav button{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.08);color:#e8e4dc;font-size:10px;padding:5px 12px;border-radius:4px;cursor:pointer;font-family:'Space Mono',monospace}
+#tutCard .tut-nav button:hover{background:rgba(255,255,255,.1)}
+#tutCard .tut-nav button.tut-next{background:#D64933;border-color:#D64933;color:#fff}
+#tutCard .tut-nav button.tut-next:hover{background:#c43d29}
+#tutCard .tut-step{font-size:9px;color:#4a4540;font-family:'Space Mono',monospace;margin-left:auto}
 </style>
 </head>
 <body>
+<div id="splash">
+  <h1>ATLANTA EXPLORER</h1>
+  <p>An AI-compiled model of residential populations across Atlanta. Midtown is most comprehensively mapped — other neighborhoods and commercial buildings are still being added.</p>
+  <button id="splashEnter">Explore the City →</button>
+  <button class="splash-skip" id="splashSkip">skip intro</button>
+</div>
+<div id="tutOverlay" style="display:none"></div>
+<div id="tutSpot" style="display:none"></div>
+<div id="tutCard" style="display:none"></div>
 
 <canvas id="c3d"></canvas>
 
@@ -385,6 +415,7 @@ body:not(.admin-mode) .gallery-upload-btn{display:none!important}
     <button class="nav-btn active" data-screen="map">Map</button>
     <button class="nav-btn" data-screen="table">Table</button>
     <button class="nav-btn" data-screen="projects">Projects</button>
+    <button class="nav-btn" id="tutorialBtn">Tutorial</button>
     <button class="nav-btn admin-only" data-screen="settings">Settings</button>
   </div>
 </div>
@@ -10277,6 +10308,143 @@ window.addEventListener('load', () => {
     </div>`;
   }
 });
+
+// ============================================================
+// SPLASH — show once per device
+// ============================================================
+(function initSplash() {
+  const splash = document.getElementById('splash');
+  const dismiss = () => {
+    splash.style.transition = 'opacity .35s';
+    splash.style.opacity = '0';
+    setTimeout(() => splash.remove(), 360);
+    localStorage.setItem('adx.visited', '1');
+  };
+  if (localStorage.getItem('adx.visited')) { splash.remove(); return; }
+  document.getElementById('splashEnter').addEventListener('click', dismiss);
+  document.getElementById('splashSkip').addEventListener('click', dismiss);
+})();
+
+// ============================================================
+// TUTORIAL — step-by-step spotlight walkthrough
+// ============================================================
+const Tutorial = {
+  steps: [
+    {
+      target: 'canvas',
+      title: '3D Map',
+      body: 'Drag to rotate · scroll to zoom · click any building to open its page. Bar height = estimated residents. Color = building type.'
+    },
+    {
+      target: 'osmToggle',
+      title: 'Satellite View',
+      body: 'Toggle Esri satellite imagery as the ground layer. Useful for orienting landmarks.'
+    },
+    {
+      target: 'compass',
+      title: 'Compass',
+      body: 'Shows your current heading. Click to snap back to north.'
+    },
+    {
+      target: 'openControls',
+      title: 'Map Controls',
+      body: 'Adjust height scale, occupancy assumptions, neighborhood visibility, and commercial building filters.'
+    },
+    {
+      target: null, screen: 'table',
+      title: 'Table View',
+      body: 'Switch to a sortable, filterable spreadsheet of all buildings. Click any row to open its building page. Use the neighborhood chips to filter.'
+    },
+    {
+      target: 'leg',
+      title: 'Legend',
+      body: 'Color key for building types — apartments, condos, student housing, mixed-use, and more.'
+    },
+    {
+      target: 'sts',
+      title: 'Live Stats',
+      body: 'Updates as you select or deselect buildings — shows estimated residents, beds, and units for your current selection.'
+    },
+    {
+      target: 'tutorialBtn',
+      title: 'You\'re all set.',
+      body: 'Click Tutorial any time to replay this walkthrough. Click a building on the map to dive into its wiki page, photos, and AI-enriched data.'
+    }
+  ],
+
+  current: 0,
+
+  start() {
+    this.current = 0;
+    document.getElementById('tutOverlay').style.display = 'block';
+    this.show(0);
+  },
+
+  stop() {
+    document.getElementById('tutOverlay').style.display = 'none';
+    document.getElementById('tutSpot').style.display = 'none';
+    document.getElementById('tutCard').style.display = 'none';
+  },
+
+  show(idx) {
+    const step = this.steps[idx];
+    if (!step) { this.stop(); return; }
+    this.current = idx;
+
+    // Switch to correct screen if needed
+    if (step.screen) UI.switchScreen(step.screen);
+    else if (!step.screen && idx === 0) UI.switchScreen('map');
+
+    // Spotlight target element
+    const spot = document.getElementById('tutSpot');
+    const card = document.getElementById('tutCard');
+    const el = step.target ? document.getElementById(step.target) || document.querySelector(step.target) : null;
+
+    if (el) {
+      const r = el.getBoundingClientRect();
+      const pad = 8;
+      spot.style.display = 'block';
+      spot.style.left   = (r.left - pad) + 'px';
+      spot.style.top    = (r.top  - pad) + 'px';
+      spot.style.width  = (r.width  + pad * 2) + 'px';
+      spot.style.height = (r.height + pad * 2) + 'px';
+    } else {
+      spot.style.display = 'none';
+    }
+
+    // Position card — prefer below target, fall back to center
+    card.innerHTML = `
+      <h4>${step.title}</h4>
+      <p>${step.body}</p>
+      <div class="tut-nav">
+        ${idx > 0 ? `<button id="tutPrev">← Back</button>` : ''}
+        <button class="tut-next" id="tutNext">${idx === this.steps.length - 1 ? 'Done' : 'Next →'}</button>
+        <span class="tut-step">${idx + 1} / ${this.steps.length}</span>
+        <button id="tutClose" style="margin-left:4px;background:none;border:none;color:#4a4540;cursor:pointer;font-size:14px" title="Close">×</button>
+      </div>`;
+    card.style.display = 'block';
+
+    const cw = 296, ch = 130;
+    let cx, cy;
+    if (el) {
+      const r = el.getBoundingClientRect();
+      cx = Math.min(r.left, window.innerWidth - cw - 12);
+      cy = r.bottom + 12;
+      if (cy + ch > window.innerHeight - 16) cy = r.top - ch - 12;
+    } else {
+      cx = (window.innerWidth - cw) / 2;
+      cy = (window.innerHeight - ch) / 2;
+    }
+    card.style.left = Math.max(8, cx) + 'px';
+    card.style.top  = Math.max(8, cy) + 'px';
+
+    card.querySelector('#tutNext').addEventListener('click', () => this.show(idx + 1));
+    card.querySelector('#tutPrev')?.addEventListener('click', () => this.show(idx - 1));
+    card.querySelector('#tutClose').addEventListener('click', () => this.stop());
+  }
+};
+
+document.getElementById('tutorialBtn').addEventListener('click', () => Tutorial.start());
 
 })();  // end IIFE
 
