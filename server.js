@@ -1,11 +1,20 @@
-const express = require('express');
-const path    = require('path');
+const express     = require('express');
+const path        = require('path');
+const compression = require('compression');
 
 const app  = express();
 const PORT = process.env.PORT || 8080;
 
+app.use(compression());
 app.use(express.json({ limit: '1mb' }));
-app.use(express.static(path.join(__dirname)));
+app.use(express.static(path.join(__dirname), {
+  maxAge: '1h',        // cache static assets for 1 hour
+  etag: true,
+  setHeaders(res, filePath) {
+    // Never cache the HTML — always fresh so deploys land immediately
+    if (filePath.endsWith('.html')) res.setHeader('Cache-Control', 'no-cache');
+  }
+}));
 
 // Proxy to Anthropic — API key lives in fly secrets, never in the browser.
 app.post('/api/enrich', async (req, res) => {
