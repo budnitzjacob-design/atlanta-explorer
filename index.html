@@ -277,7 +277,11 @@ input[type=range]::-moz-range-thumb{width:13px;height:13px;border-radius:50%;bac
   /* Controls button — top-right, small icon-style */
   #controlsBtn{
     top:58px;right:10px;bottom:auto;
-    font-size:8px;padding:5px 9px;letter-spacing:1px;
+    font-size:7px;padding:2px 8px;letter-spacing:1px;line-height:1;
+  }
+  #compass{
+    bottom:auto;top:54px;left:10px;
+    width:44px;height:44px;
   }
 
   /* Map controls — full-width sheet from bottom */
@@ -331,8 +335,6 @@ input[type=range]::-moz-range-thumb{width:13px;height:13px;border-radius:50%;bac
   .mob-tab.active{color:#D64933}
   .mob-tab.active svg{opacity:1}
 
-  /* Controls btn repositioned for mobile */
-  #controlsBtn{bottom:calc(68px + env(safe-area-inset-bottom));right:14px}
 
   /* Table — horizontal scroll */
   #tablePanel .table-container{overflow-x:auto;-webkit-overflow-scrolling:touch}
