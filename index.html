@@ -526,7 +526,7 @@ body:not(.admin-mode) .bp-profile-placeholder{display:none!important}
     </svg>
     Map
   </button>
-  <button class="mob-tab" data-mob-screen="table" aria-label="Table">
+  <button class="mob-tab admin-only" data-mob-screen="table" aria-label="Table">
     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
       <rect x="3" y="3" width="18" height="18" rx="2"/>
       <path d="M3 9h18M3 15h18M9 3v18"/>
@@ -584,7 +584,7 @@ body:not(.admin-mode) .bp-profile-placeholder{display:none!important}
   </div>
   <div class="nav-group">
     <button class="nav-btn active" data-screen="map">Map</button>
-    <button class="nav-btn" data-screen="table">Table</button>
+    <button class="nav-btn admin-only" data-screen="table">Table</button>
     <button class="nav-btn admin-only" data-screen="projects">Projects</button>
     <button class="nav-btn admin-only" id="tutorialBtn">Tutorial</button>
     <button class="nav-btn admin-only" data-screen="settings">Settings</button>
@@ -10718,9 +10718,6 @@ const Tutorial = {
       body: 'Adjust height scale, occupancy assumptions, neighborhood visibility, and commercial building filters.'
     },
     {
-      target: null, screen: 'table',
-      title: 'Table View',
-      body: 'Switch to a sortable, filterable spreadsheet of all buildings. Click any row to open its building page. Use the neighborhood chips to filter.'
     },
     {
       target: 'leg',
